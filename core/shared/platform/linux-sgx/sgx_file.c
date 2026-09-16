@@ -13,6 +13,22 @@
 
 #ifndef SGX_DISABLE_WASI
 
+__attribute__((weak)) void
+wasm_sgx_capture_write(int fd, const char *buf, size_t len)
+{
+    (void)fd;
+    (void)buf;
+    (void)len;
+}
+
+__attribute__((weak)) ssize_t
+wasm_sgx_read_stdin(char *buf, size_t len)
+{
+    (void)buf;
+    (void)len;
+    return -1;
+}
+
 #define TRACE_FUNC() os_printf("undefined %s\n", __FUNCTION__)
 #define TRACE_OCALL_FAIL() os_printf("ocall %s failed!\n", __FUNCTION__)
 
@@ -253,6 +269,13 @@ read(int fd, void *buf, size_t size)
         return -1;
     }
 
+    if (fd == 0) {
+        ret = wasm_sgx_read_stdin(p, size);
+        if (ret >= 0) {
+            return ret;
+        }
+    }
+
     count = (size + size_read_max - 1) / size_read_max;
     for (i = 0; i < count; i++) {
         size_read = (i < count - 1) ? size_read_max : size - size_read_max * i;
@@ -378,6 +401,23 @@ readv_internal(int fd, const struct iovec *iov, int iovcnt, bool has_offset,
     if (iov == NULL || iovcnt < 1)
         return -1;
 
+    if (fd == 0) {
+        ssize_t total = 0;
+        for (i = 0; i < iovcnt; i++) {
+            ret = wasm_sgx_read_stdin((char *)iov[i].iov_base, iov[i].iov_len);
+            if (ret < 0) {
+                break;
+            }
+            total += ret;
+            if ((size_t)ret < iov[i].iov_len) {
+                return total;
+            }
+        }
+        if (total > 0) {
+            return total;
+        }
+    }
+
     for (i = 0; i < iovcnt; i++) {
         total_size += iov[i].iov_len;
     }
@@ -476,6 +516,12 @@ writev_internal(int fd, const struct iovec *iov, int iovcnt, bool has_offset,
         iov1[i].iov_base = p;
         memcpy((uintptr_t)p + (char *)iov1, iov[i].iov_base, iov[i].iov_len);
         p += iov[i].iov_len;
+    }
+
+    if (fd == 1 || fd == 2) {
+        for (i = 0; i < iovcnt; i++) {
+            wasm_sgx_capture_write(fd, (const char *)iov[i].iov_base, iov[i].iov_len);
+        }
     }
 
     if (ocall_writev(&ret, fd, (char *)iov1, (uint32)total_size, iovcnt,

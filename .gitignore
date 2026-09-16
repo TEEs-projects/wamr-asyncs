@@ -21,9 +21,14 @@ core/iwasm/libraries/lib-wasi-threads/test/*.wasm
 core/iwasm/libraries/lib-socket/test/*.wasm
 
 product-mini/app-samples/hello-world/test.wasm
+product-mini/app-samples/hello-world/test_wasm.h
 product-mini/platforms/linux-sgx/enclave-sample/App/
 product-mini/platforms/linux-sgx/enclave-sample/Enclave/
 product-mini/platforms/linux-sgx/enclave-sample/iwasm
+product-mini/platforms/linux-sgx/enclave-sample/test.wasm
+product-mini/platforms/linux-sgx/enclave-sample/test_wasm.h
+
+wamr-compiler/output.log
 
 build_out
 tests/wamr-test-suites/workspace

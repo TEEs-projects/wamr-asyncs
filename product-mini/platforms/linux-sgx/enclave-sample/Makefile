@@ -5,9 +5,9 @@
 
 SGX_SDK ?= /opt/intel/sgxsdk
 SGX_SSL ?= /opt/intel/sgxssl
-SGX_MODE ?= SIM
+SGX_MODE ?= HW
 SGX_ARCH ?= x64
-SGX_DEBUG ?= 0
+SGX_DEBUG ?= 1
 SPEC_TEST ?= 0
 
 # These variables are automatically set by CMakeLists.txt

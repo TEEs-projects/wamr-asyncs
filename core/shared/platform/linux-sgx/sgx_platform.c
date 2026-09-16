@@ -6,6 +6,7 @@
 #include "platform_api_vmcore.h"
 #include "platform_api_extension.h"
 #include "sgx_rsrv_mem_mngr.h"
+#include <stdio.h>
 
 #if WASM_ENABLE_SGX_IPFS != 0
 #include "sgx_ipfs.h"
